@@ -2,6 +2,7 @@ package com.example.bili2media.cache.scanner
 
 import androidx.documentfile.provider.FakeDocumentFile
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.bili2media.cache.model.CacheEntryLocation
 import com.example.bili2media.cache.model.CoverSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -56,6 +57,10 @@ class DocumentTreeBiliCacheScannerTest {
         val result = scanner(entry to """{"title":"Stable"}""").scan(root).single()
 
         assertEquals(CoverSource.Local(expected.uri.toString()), result.coverSource)
+        assertEquals(
+            CacheEntryLocation.DocumentDirectory(candidate.uri.toString()),
+            result.location
+        )
     }
 
     @Test

@@ -4,6 +4,8 @@ import android.content.ContentResolver
 import androidx.documentfile.provider.DocumentFile
 import com.example.bili2media.cache.cover.BiliCacheCoverResolver
 import com.example.bili2media.cache.model.BiliCacheEntry
+import com.example.bili2media.cache.model.CacheEntryLocation
+import com.example.bili2media.cache.policy.BiliCacheEntryFileSelector
 import java.util.ArrayDeque
 import java.util.Locale
 
@@ -34,6 +36,9 @@ class DocumentTreeBiliCacheScanner(
                 fallbackName = candidate.directory.name.orEmpty()
                     .ifBlank { candidate.relativePath },
                 relativePath = candidate.relativePath,
+                location = CacheEntryLocation.DocumentDirectory(
+                    candidate.directory.uri.toString()
+                ),
                 jsonText = jsonText,
                 mediaFiles = assets.mediaFiles,
                 localCoverUri = assets.localCoverUri

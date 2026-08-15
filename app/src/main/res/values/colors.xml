@@ -2,6 +2,7 @@
 <resources>
     <color name="white">#FFFFFFFF</color>
     <color name="bili2media_accent">#4B5563</color>
+    <color name="bili2media_accent_pressed">#333333</color>
     <color name="bili2media_background">#F2F3F5</color>
     <color name="bili2media_surface_card">#FFFFFFFF</color>
     <color name="bili2media_surface_subtle">#F6F7F9</color>

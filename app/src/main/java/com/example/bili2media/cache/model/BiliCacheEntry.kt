@@ -7,6 +7,7 @@ data class BiliCacheEntry(
     val avid: Long?,
     val cid: Long?,
     val relativePath: String,
+    val location: CacheEntryLocation,
     val mediaFileCount: Int,
     val totalBytes: Long,
     val status: BiliCacheStatus,

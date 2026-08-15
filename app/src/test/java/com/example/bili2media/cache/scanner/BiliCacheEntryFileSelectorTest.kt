@@ -1,5 +1,6 @@
 package com.example.bili2media.cache.scanner
 
+import com.example.bili2media.cache.policy.BiliCacheEntryFileSelector
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

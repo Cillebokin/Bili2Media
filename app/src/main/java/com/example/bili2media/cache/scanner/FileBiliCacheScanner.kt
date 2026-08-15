@@ -2,6 +2,8 @@ package com.example.bili2media.cache.scanner
 
 import com.example.bili2media.cache.cover.BiliCacheCoverResolver
 import com.example.bili2media.cache.model.BiliCacheEntry
+import com.example.bili2media.cache.model.CacheEntryLocation
+import com.example.bili2media.cache.policy.BiliCacheEntryFileSelector
 import java.io.File
 import java.util.ArrayDeque
 import java.util.Locale
@@ -34,6 +36,7 @@ class FileBiliCacheScanner(
             entryFactory.create(
                 fallbackName = candidate.directory.name.ifBlank { relativePath },
                 relativePath = relativePath,
+                location = CacheEntryLocation.FileDirectory(candidate.directory.path),
                 jsonText = jsonText,
                 mediaFiles = assets.mediaFiles,
                 localCoverUri = assets.localCoverUri

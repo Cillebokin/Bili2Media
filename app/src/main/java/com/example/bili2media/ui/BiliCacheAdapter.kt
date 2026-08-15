@@ -4,7 +4,9 @@ import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -13,15 +15,26 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.bili2media.R
 import com.example.bili2media.cache.model.BiliCacheEntry
 import com.example.bili2media.cache.model.BiliCacheStatus
+import com.example.bili2media.ui.export.BiliCacheListItem
+import com.example.bili2media.ui.export.Mp4ExportUiState
 import com.example.bili2media.ui.image.CoverImageLoader
 
 class BiliCacheAdapter(
-    private val coverImageLoader: CoverImageLoader
-) : ListAdapter<BiliCacheEntry, BiliCacheAdapter.CacheViewHolder>(DIFF_CALLBACK) {
+    private val coverImageLoader: CoverImageLoader,
+    private val onExport: (BiliCacheEntry) -> Unit,
+    private val onCancel: (String) -> Unit,
+    private val onOpenOutput: (String) -> Unit
+) : ListAdapter<BiliCacheListItem, BiliCacheAdapter.CacheViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CacheViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_bili_cache, parent, false)
-        return CacheViewHolder(view, coverImageLoader)
+        return CacheViewHolder(
+            itemView = view,
+            coverImageLoader = coverImageLoader,
+            onExport = onExport,
+            onCancel = onCancel,
+            onOpenOutput = onOpenOutput
+        )
     }
 
     override fun onBindViewHolder(holder: CacheViewHolder, position: Int) {
@@ -30,7 +43,10 @@ class BiliCacheAdapter(
 
     class CacheViewHolder(
         itemView: View,
-        private val coverImageLoader: CoverImageLoader
+        private val coverImageLoader: CoverImageLoader,
+        private val onExport: (BiliCacheEntry) -> Unit,
+        private val onCancel: (String) -> Unit,
+        private val onOpenOutput: (String) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
         private val imgCover: ImageView = itemView.findViewById(R.id.imgCacheCover)
         private val txtTitle: TextView = itemView.findViewById(R.id.txtCacheTitle)
@@ -39,8 +55,12 @@ class BiliCacheAdapter(
         private val txtDetails: TextView = itemView.findViewById(R.id.txtCacheDetails)
         private val txtIds: TextView = itemView.findViewById(R.id.txtCacheIds)
         private val txtPath: TextView = itemView.findViewById(R.id.txtCachePath)
+        private val progressExport: ProgressBar = itemView.findViewById(R.id.progressExport)
+        private val txtExportStatus: TextView = itemView.findViewById(R.id.txtExportStatus)
+        private val btnExportAction: Button = itemView.findViewById(R.id.btnExportAction)
 
-        fun bind(entry: BiliCacheEntry) {
+        fun bind(item: BiliCacheListItem) {
+            val entry = item.entry
             val context = itemView.context
             txtTitle.text = entry.title
             txtSubtitle.text = entry.subtitle
@@ -71,16 +91,98 @@ class BiliCacheAdapter(
             txtStatus.setText(statusTextRes)
             txtStatus.setTextColor(ContextCompat.getColor(context, statusColorRes))
             coverImageLoader.load(imgCover, entry.coverSource)
+            bindExportState(entry, item.exportState)
+        }
+
+        private fun bindExportState(entry: BiliCacheEntry, state: Mp4ExportUiState) {
+            val context = itemView.context
+            progressExport.visibility = View.GONE
+            progressExport.isIndeterminate = true
+            txtExportStatus.setTextColor(
+                ContextCompat.getColor(context, R.color.bili2media_text_secondary)
+            )
+            btnExportAction.setOnClickListener(null)
+
+            when (state) {
+                Mp4ExportUiState.Idle -> {
+                    txtExportStatus.setText(R.string.export_status_ready)
+                    btnExportAction.setText(R.string.export_mp4)
+                    btnExportAction.isEnabled = entry.status == BiliCacheStatus.AVAILABLE
+                    btnExportAction.setOnClickListener { onExport(entry) }
+                }
+
+                Mp4ExportUiState.Queued -> {
+                    txtExportStatus.setText(R.string.export_status_queued)
+                    bindCancel(entry)
+                }
+
+                Mp4ExportUiState.Analyzing -> {
+                    progressExport.visibility = View.VISIBLE
+                    txtExportStatus.setText(R.string.export_status_analyzing)
+                    bindCancel(entry)
+                }
+
+                is Mp4ExportUiState.Exporting -> {
+                    progressExport.visibility = View.VISIBLE
+                    progressExport.isIndeterminate = false
+                    progressExport.progress = state.progress
+                    txtExportStatus.text = context.getString(
+                        R.string.export_status_progress,
+                        state.progress
+                    )
+                    bindCancel(entry)
+                }
+
+                is Mp4ExportUiState.Succeeded -> {
+                    txtExportStatus.setText(R.string.export_status_succeeded)
+                    btnExportAction.setText(R.string.open_mp4)
+                    btnExportAction.isEnabled = true
+                    btnExportAction.setOnClickListener {
+                        onOpenOutput(state.outputUri)
+                    }
+                }
+
+                is Mp4ExportUiState.Failed -> {
+                    txtExportStatus.setText(R.string.export_status_failed)
+                    txtExportStatus.setTextColor(
+                        ContextCompat.getColor(context, R.color.bili2media_danger)
+                    )
+                    bindRetry(entry)
+                }
+
+                Mp4ExportUiState.Cancelled -> {
+                    txtExportStatus.setText(R.string.export_status_cancelled)
+                    bindRetry(entry)
+                }
+            }
+        }
+
+        private fun bindCancel(entry: BiliCacheEntry) {
+            btnExportAction.setText(R.string.cancel_export)
+            btnExportAction.isEnabled = true
+            btnExportAction.setOnClickListener { onCancel(entry.id) }
+        }
+
+        private fun bindRetry(entry: BiliCacheEntry) {
+            btnExportAction.setText(R.string.retry_export)
+            btnExportAction.isEnabled = entry.status == BiliCacheStatus.AVAILABLE
+            btnExportAction.setOnClickListener { onExport(entry) }
         }
     }
 
     private companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<BiliCacheEntry>() {
-            override fun areItemsTheSame(oldItem: BiliCacheEntry, newItem: BiliCacheEntry): Boolean {
-                return oldItem.id == newItem.id
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<BiliCacheListItem>() {
+            override fun areItemsTheSame(
+                oldItem: BiliCacheListItem,
+                newItem: BiliCacheListItem
+            ): Boolean {
+                return oldItem.entry.id == newItem.entry.id
             }
 
-            override fun areContentsTheSame(oldItem: BiliCacheEntry, newItem: BiliCacheEntry): Boolean {
+            override fun areContentsTheSame(
+                oldItem: BiliCacheListItem,
+                newItem: BiliCacheListItem
+            ): Boolean {
                 return oldItem == newItem
             }
         }

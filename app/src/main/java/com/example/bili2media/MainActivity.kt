@@ -1,7 +1,9 @@
 package com.example.bili2media
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -10,10 +12,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bili2media.cache.model.BiliCacheEntry
@@ -23,6 +28,9 @@ import com.example.bili2media.storage.CacheRootSelection
 import com.example.bili2media.storage.CacheRootStore
 import com.example.bili2media.storage.DefaultCacheDirectory
 import com.example.bili2media.ui.BiliCacheAdapter
+import com.example.bili2media.ui.export.BiliCacheListItem
+import com.example.bili2media.ui.export.Mp4ExportUiState
+import com.example.bili2media.ui.export.Mp4ExportViewModel
 import com.example.bili2media.ui.image.CoilCoverImageLoader
 import java.io.File
 import java.util.concurrent.Executors
@@ -38,13 +46,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtContentMessage: TextView
     private lateinit var recyclerCaches: RecyclerView
 
-    private val cacheAdapter = BiliCacheAdapter(CoilCoverImageLoader())
+    private val cacheAdapter by lazy {
+        BiliCacheAdapter(
+            coverImageLoader = CoilCoverImageLoader(),
+            onExport = ::enqueueExport,
+            onCancel = ::cancelExport,
+            onOpenOutput = ::openExportedMp4
+        )
+    }
     private val scanExecutor = Executors.newSingleThreadExecutor()
     private val scanGeneration = AtomicInteger(0)
     private val rootStore by lazy { CacheRootStore(this) }
 
     private var initialized = false
     private var lastAllFilesAccess = false
+    private var notificationPermissionRequested = false
+    private var scannedEntries: List<BiliCacheEntry> = emptyList()
+    private var latestExportStates: Map<String, Mp4ExportUiState> = emptyMap()
+    private lateinit var exportViewModel: Mp4ExportViewModel
 
     private val allFilesAccessLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -60,9 +79,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        // Export continues regardless of notification permission result.
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        notificationPermissionRequested = savedInstanceState?.getBoolean(
+            STATE_NOTIFICATION_PERMISSION_REQUESTED,
+            false
+        ) ?: false
 
         txtCurrentDirectory = findViewById(R.id.txtCurrentDirectory)
         txtAccessStatus = findViewById(R.id.txtAccessStatus)
@@ -75,6 +104,12 @@ class MainActivity : AppCompatActivity() {
 
         recyclerCaches.layoutManager = LinearLayoutManager(this)
         recyclerCaches.adapter = cacheAdapter
+
+        exportViewModel = ViewModelProvider(this)[Mp4ExportViewModel::class.java]
+        exportViewModel.states.observe(this) { states ->
+            latestExportStates = states.orEmpty()
+            submitCombinedList()
+        }
 
         btnGrantAccess.setOnClickListener {
             if (Environment.isExternalStorageManager()) {
@@ -106,6 +141,14 @@ class MainActivity : AppCompatActivity() {
         scanGeneration.incrementAndGet()
         scanExecutor.shutdownNow()
         super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(
+            STATE_NOTIFICATION_PERMISSION_REQUESTED,
+            notificationPermissionRequested
+        )
+        super.onSaveInstanceState(outState)
     }
 
     private fun handleSelectedTree(uri: Uri) {
@@ -235,7 +278,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLoading() {
-        cacheAdapter.submitList(emptyList())
+        scannedEntries = emptyList()
+        submitCombinedList()
         progressScan.visibility = View.VISIBLE
         recyclerCaches.visibility = View.GONE
         txtContentMessage.visibility = View.GONE
@@ -246,7 +290,8 @@ class MainActivity : AppCompatActivity() {
         progressScan.visibility = View.GONE
         btnRefresh.isEnabled = true
         if (entries.isEmpty()) {
-            cacheAdapter.submitList(emptyList())
+            scannedEntries = emptyList()
+            submitCombinedList()
             recyclerCaches.visibility = View.GONE
             txtContentMessage.text = getString(R.string.no_cache_found)
             txtContentMessage.setTextColor(getColor(R.color.bili2media_text_secondary))
@@ -254,7 +299,8 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        cacheAdapter.submitList(entries)
+        scannedEntries = entries
+        submitCombinedList()
         txtContentMessage.visibility = View.GONE
         recyclerCaches.visibility = View.VISIBLE
     }
@@ -262,7 +308,8 @@ class MainActivity : AppCompatActivity() {
     private fun showMessage(message: String, isError: Boolean) {
         progressScan.visibility = View.GONE
         recyclerCaches.visibility = View.GONE
-        cacheAdapter.submitList(emptyList())
+        scannedEntries = emptyList()
+        submitCombinedList()
         txtContentMessage.text = message
         txtContentMessage.setTextColor(
             getColor(
@@ -271,5 +318,55 @@ class MainActivity : AppCompatActivity() {
         )
         txtContentMessage.visibility = View.VISIBLE
         renderHeader(rootStore.current())
+    }
+
+    private fun submitCombinedList() {
+        cacheAdapter.submitList(
+            scannedEntries.map { entry ->
+                BiliCacheListItem(
+                    entry = entry,
+                    exportState = latestExportStates[entry.id] ?: Mp4ExportUiState.Idle
+                )
+            }
+        )
+    }
+
+    private fun enqueueExport(entry: BiliCacheEntry) {
+        exportViewModel.enqueue(entry)
+        requestNotificationPermissionIfNeeded()
+    }
+
+    private fun cancelExport(entryId: String) {
+        exportViewModel.cancel(entryId)
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (notificationPermissionRequested ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        notificationPermissionRequested = true
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    private fun openExportedMp4(uriValue: String) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(Uri.parse(uriValue), "video/mp4")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.open_mp4_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private companion object {
+        const val STATE_NOTIFICATION_PERMISSION_REQUESTED =
+            "notification_permission_requested"
     }
 }

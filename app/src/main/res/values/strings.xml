@@ -20,4 +20,21 @@
     <string name="cache_status_available">可用</string>
     <string name="cache_status_no_media">未发现媒体</string>
     <string name="cache_status_metadata_error">元数据异常</string>
+    <string name="mp4_export_notification_channel_name">MP4 exports</string>
+    <string name="mp4_export_notification_title">Exporting MP4</string>
+    <string name="mp4_export_notification_analyzing">Analyzing cache</string>
+    <string name="mp4_export_notification_progress">Exporting %1$d%%</string>
+    <string name="mp4_export_notification_cancel">Cancel</string>
+    <string name="export_mp4">导出 MP4</string>
+    <string name="cancel_export">取消</string>
+    <string name="open_mp4">打开 MP4</string>
+    <string name="retry_export">重试</string>
+    <string name="export_status_ready">可无损导出为 MP4</string>
+    <string name="export_status_queued">等待导出</string>
+    <string name="export_status_analyzing">正在分析媒体轨道</string>
+    <string name="export_status_progress">正在导出 %1$d%%</string>
+    <string name="export_status_succeeded">已保存到下载目录</string>
+    <string name="export_status_failed">导出失败，点击重试</string>
+    <string name="export_status_cancelled">导出已取消</string>
+    <string name="open_mp4_failed">没有可打开 MP4 的应用</string>
 </resources>

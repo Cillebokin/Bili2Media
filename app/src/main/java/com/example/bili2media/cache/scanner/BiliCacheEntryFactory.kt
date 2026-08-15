@@ -3,6 +3,8 @@ package com.example.bili2media.cache.scanner
 import com.example.bili2media.cache.cover.BiliCacheCoverResolver
 import com.example.bili2media.cache.model.BiliCacheEntry
 import com.example.bili2media.cache.model.BiliCacheStatus
+import com.example.bili2media.cache.model.CacheEntryLocation
+import com.example.bili2media.cache.model.CacheEntryIdentity
 import com.example.bili2media.cache.parser.BiliCacheMetadataParser
 
 class BiliCacheEntryFactory(
@@ -12,6 +14,7 @@ class BiliCacheEntryFactory(
     fun create(
         fallbackName: String,
         relativePath: String,
+        location: CacheEntryLocation,
         jsonText: String,
         mediaFiles: List<BiliCacheMedia>,
         localCoverUri: String? = null
@@ -25,12 +28,13 @@ class BiliCacheEntryFactory(
         }
 
         return BiliCacheEntry(
-            id = relativePath,
+            id = CacheEntryIdentity.stableId(location),
             title = metadata?.title ?: fallbackName,
             subtitle = metadata?.subtitle,
             avid = metadata?.avid,
             cid = metadata?.cid,
             relativePath = relativePath,
+            location = location,
             mediaFileCount = mediaFiles.size,
             totalBytes = mediaFiles.sumOf { it.size.coerceAtLeast(0L) },
             status = status,

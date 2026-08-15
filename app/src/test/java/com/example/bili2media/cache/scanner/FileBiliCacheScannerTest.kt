@@ -1,8 +1,10 @@
 package com.example.bili2media.cache.scanner
 
 import com.example.bili2media.cache.model.BiliCacheStatus
+import com.example.bili2media.cache.model.CacheEntryLocation
 import com.example.bili2media.cache.model.CoverSource
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -40,6 +42,10 @@ class FileBiliCacheScannerTest {
         assertEquals(2, entry.mediaFileCount)
         assertEquals(5L, entry.totalBytes)
         assertEquals(BiliCacheStatus.AVAILABLE, entry.status)
+        assertEquals(
+            CacheEntryLocation.FileDirectory(File(root, "cacheA").canonicalPath),
+            entry.location
+        )
     }
 
     @Test
@@ -97,6 +103,20 @@ class FileBiliCacheScannerTest {
 
         assertTrue(scanner.scan(File(root, "missing")).isEmpty())
         assertTrue(scanner.scan(file).isEmpty())
+    }
+
+    @Test
+    fun scan_usesDifferentEntryIdsForTheSameRelativePathInDifferentRoots() {
+        val firstRoot = temporaryFolder.newFolder("first-root")
+        val secondRoot = temporaryFolder.newFolder("second-root")
+        writeText(firstRoot, "cache/entry.json", """{"title":"First"}""")
+        writeText(secondRoot, "cache/entry.json", """{"title":"Second"}""")
+
+        val first = scanner.scan(firstRoot).single()
+        val second = scanner.scan(secondRoot).single()
+
+        assertNotEquals(first.id, second.id)
+        assertEquals(first.id, scanner.scan(firstRoot).single().id)
     }
 
     @Test

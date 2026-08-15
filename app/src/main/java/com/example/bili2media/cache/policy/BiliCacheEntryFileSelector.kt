@@ -1,4 +1,4 @@
-package com.example.bili2media.cache.scanner
+package com.example.bili2media.cache.policy
 
 import java.util.Locale
 
