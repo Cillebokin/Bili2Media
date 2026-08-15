@@ -4,14 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bili2media_background"
-    android:padding="@dimen/space_md"
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:id="@+id/homeCard"
+        android:id="@+id/headerCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_marginEnd="@dimen/space_md"
         android:background="@drawable/bg_home_card"
         android:elevation="2dp"
         android:orientation="vertical"
@@ -32,11 +33,116 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_sm"
-            android:includeFontPadding="false"
-            android:text="@string/project_ready"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/scanner_subtitle"
             android:textColor="@color/bili2media_text_secondary"
             android:textSize="@dimen/text_body" />
+
+        <TextView
+            android:id="@+id/txtCurrentDirectory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:ellipsize="middle"
+            android:maxLines="2"
+            android:textColor="@color/bili2media_text_primary"
+            android:textSize="@dimen/text_caption"
+            tools:text="目录：Download/Bili2Media/Input" />
+
+        <TextView
+            android:id="@+id/txtAccessStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:textColor="@color/bili2media_text_secondary"
+            android:textSize="@dimen/text_caption"
+            tools:text="默认目录需要所有文件访问权限" />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/actionCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/space_md"
+        android:background="@drawable/bg_home_card"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/space_sm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerCard">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGrantAccess"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="44dp"
+            android:text="@string/grant_access" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChooseDirectory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_sm"
+            android:layout_weight="1"
+            android:minHeight="44dp"
+            android:text="@string/choose_directory" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_sm"
+            android:layout_weight="1"
+            android:minHeight="44dp"
+            android:text="@string/refresh" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/contentCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/space_md"
+        android:layout_marginBottom="@dimen/space_md"
+        android:background="@drawable/bg_home_card"
+        android:clipToOutline="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/actionCard">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCaches"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="@dimen/space_sm"
+            android:visibility="gone"
+            tools:listitem="@layout/item_bili_cache"
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/progressScan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/txtContentMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="@dimen/space_lg"
+            android:textColor="@color/bili2media_text_secondary"
+            android:textSize="@dimen/text_body"
+            tools:text="未发现缓存" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

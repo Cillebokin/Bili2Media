@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_sm"
+    android:background="@drawable/bg_cache_item"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/space_md">
+
+    <ImageView
+        android:id="@+id/imgCacheCover"
+        android:layout_width="@dimen/cache_cover_width"
+        android:layout_height="@dimen/cache_cover_height"
+        android:background="@drawable/bg_cover_frame"
+        android:clipToOutline="true"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_cover_placeholder" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txtCacheTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/bili2media_text_primary"
+                android:textSize="@dimen/text_body"
+                android:textStyle="bold"
+                tools:text="示例视频" />
+
+            <TextView
+                android:id="@+id/txtCacheStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:background="@drawable/bg_status_chip"
+                android:paddingStart="@dimen/space_sm"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_sm"
+                android:paddingBottom="@dimen/space_xs"
+                android:textColor="@color/bili2media_text_secondary"
+                android:textSize="@dimen/text_caption"
+                tools:text="可用" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtCacheSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:textColor="@color/bili2media_text_secondary"
+            android:textSize="@dimen/text_caption"
+            tools:text="第一集" />
+
+        <TextView
+            android:id="@+id/txtCacheDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:textColor="@color/bili2media_text_primary"
+            android:textSize="@dimen/text_caption"
+            tools:text="12 MB · 2 个片段" />
+
+        <TextView
+            android:id="@+id/txtCacheIds"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:textColor="@color/bili2media_text_secondary"
+            android:textSize="@dimen/text_caption"
+            tools:text="AV123 · CID456" />
+
+        <TextView
+            android:id="@+id/txtCachePath"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:ellipsize="middle"
+            android:maxLines="2"
+            android:textColor="@color/bili2media_text_tertiary"
+            android:textSize="@dimen/text_caption"
+            tools:text="12345/67890" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -4,6 +4,11 @@
     <color name="bili2media_accent">#4B5563</color>
     <color name="bili2media_background">#F2F3F5</color>
     <color name="bili2media_surface_card">#FFFFFFFF</color>
+    <color name="bili2media_surface_subtle">#F6F7F9</color>
     <color name="bili2media_text_primary">#202124</color>
     <color name="bili2media_text_secondary">#6B7280</color>
+    <color name="bili2media_text_tertiary">#9F9FA6</color>
+    <color name="bili2media_divider">#E5E7EB</color>
+    <color name="bili2media_status_background">#EDEFF2</color>
+    <color name="bili2media_danger">#E5484D</color>
 </resources>

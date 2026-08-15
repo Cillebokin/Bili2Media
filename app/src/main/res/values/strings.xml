@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Bili2Media</string>
-    <string name="project_ready">工程已就绪</string>
+    <string name="scanner_subtitle">扫描手动复制到公共目录的 Bilibili 缓存</string>
+    <string name="current_directory_format">目录：%1$s</string>
+    <string name="grant_access">授权访问</string>
+    <string name="use_default_directory">使用默认目录</string>
+    <string name="choose_directory">选择目录</string>
+    <string name="refresh">刷新</string>
+    <string name="default_directory_access_granted">已获得默认目录访问权限</string>
+    <string name="default_directory_access_required">默认目录需要所有文件访问权限</string>
+    <string name="tree_directory_access_granted">已通过系统目录授权访问</string>
+    <string name="permission_required_message">请授权访问默认目录，或选择一个公共目录</string>
+    <string name="directory_permission_failed">无法保存目录读取权限，请重新选择</string>
+    <string name="directory_permission_expired">目录授权已失效，请重新选择目录</string>
+    <string name="default_directory_create_failed">无法创建默认输入目录</string>
+    <string name="scan_failed">扫描失败，请检查目录访问权限后重试</string>
+    <string name="no_cache_found">未发现包含 entry.json 的 Bilibili 缓存</string>
+    <string name="cache_details_format">%1$s · %2$d 个片段</string>
+    <string name="cache_status_available">可用</string>
+    <string name="cache_status_no_media">未发现媒体</string>
+    <string name="cache_status_metadata_error">元数据异常</string>
 </resources>
