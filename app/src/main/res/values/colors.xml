@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="bili2media_accent">#4B5563</color>
+    <color name="bili2media_background">#F2F3F5</color>
+    <color name="bili2media_surface_card">#FFFFFFFF</color>
+    <color name="bili2media_text_primary">#202124</color>
+    <color name="bili2media_text_secondary">#6B7280</color>
+</resources>
