@@ -15,4 +15,16 @@
     <color name="bili2media_divider">#E5E7EB</color>
     <color name="bili2media_status_background">#EDEFF2</color>
     <color name="bili2media_danger">#E5484D</color>
+    <color name="bili2media_settings_accent">#2563EB</color>
+    <color name="bili2media_settings_background">#F8FAFC</color>
+    <color name="bili2media_settings_surface_card">#FFFFFFFF</color>
+    <color name="bili2media_settings_text_primary">#111827</color>
+    <color name="bili2media_settings_text_secondary">#4B5563</color>
+    <color name="bili2media_settings_text_tertiary">#6B7280</color>
+    <color name="bili2media_settings_icon">#374151</color>
+    <color name="bili2media_settings_divider">#E5E7EB</color>
+    <color name="bili2media_settings_control_outline">#9CA3AF</color>
+    <color name="bili2media_settings_control_thumb">#FFFFFFFF</color>
+    <color name="bili2media_settings_control_disabled">#D1D5DB</color>
+    <color name="bili2media_settings_text_on_accent">#FFFFFF</color>
 </resources>

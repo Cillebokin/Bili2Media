@@ -5,6 +5,6 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
     <path
-        android:fillColor="#FF000000"
-        android:pathData="M9.29,6.71 13.17,10.6 9.29,14.49 10.7,15.9 16,10.6 10.7,5.3z" />
+        android:fillColor="@color/bili2media_settings_icon"
+        android:pathData="M10,6L8.59,7.41L13.17,12L8.59,16.59L10,18L16,12z" />
 </vector>

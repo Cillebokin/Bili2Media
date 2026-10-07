@@ -24,7 +24,8 @@
             android:exported="false" />
         <activity
             android:name=".SettingsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Bili2Media.Settings" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -1,0 +1,19 @@
+<resources>
+    <style name="Theme.Bili2Media.Settings" parent="Theme.Bili2Media">
+        <item name="colorPrimary">@color/bili2media_settings_accent</item>
+        <item name="colorOnPrimary">@color/bili2media_settings_text_on_accent</item>
+        <item name="colorSecondary">@color/bili2media_settings_accent</item>
+        <item name="colorOnSecondary">@color/bili2media_settings_text_on_accent</item>
+        <item name="colorAccent">@color/bili2media_settings_accent</item>
+        <item name="colorControlActivated">@color/bili2media_settings_accent</item>
+        <item name="android:colorAccent">@color/bili2media_settings_accent</item>
+        <item name="android:colorControlActivated">@color/bili2media_settings_accent</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:statusBarColor">@color/bili2media_settings_background</item>
+        <item name="android:navigationBarColor">@color/bili2media_settings_background</item>
+        <item name="android:windowBackground">@color/bili2media_settings_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
