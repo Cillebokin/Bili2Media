@@ -22,7 +22,7 @@ Bili2Media 是一款本地 Android 应用，可将 哔***哩 缓存的媒体导�
 
 ## 软件界面
 
-![pic01](pics\pic01.png)
+![pic01](pics/pic01.png)
 
 ## 运行环境
 
