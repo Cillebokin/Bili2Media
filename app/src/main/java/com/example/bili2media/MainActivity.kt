@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -42,6 +43,7 @@ import com.example.bili2media.storage.CacheRootSelection
 import com.example.bili2media.storage.CacheRootStore
 import com.example.bili2media.storage.DefaultCacheDirectory
 import com.example.bili2media.storage.InputDirectoryObserver
+import com.example.bili2media.storage.OutputDirectoryStore
 import com.example.bili2media.ui.BiliCacheAdapter
 import com.example.bili2media.ui.common.showRounded
 import com.example.bili2media.ui.export.BiliCacheListItem
@@ -76,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private val scanExecutor = Executors.newSingleThreadExecutor()
     private val scanGeneration = AtomicInteger(0)
     private val rootStore by lazy { CacheRootStore(this) }
+    private val outputDirectoryStore by lazy { OutputDirectoryStore(this) }
     private val mp4OutputStore by lazy { MediaStoreMp4OutputStore(this) }
     private val m4aOutputStore by lazy { MediaStoreM4aOutputStore(this) }
     private val mp3OutputStore by lazy { MediaStoreMp3OutputStore(this) }
@@ -130,10 +133,7 @@ class MainActivity : AppCompatActivity() {
         txtOutputDirectory = findViewById(R.id.txtOutputDirectory)
         btnHelp = findViewById(R.id.btnHelp)
         btnSettings = findViewById(R.id.btnSettings)
-        txtOutputDirectory.text = getString(
-            R.string.directory_path_format,
-            MediaStoreMp4OutputStore.OUTPUT_RELATIVE_PATH
-        )
+        updateOutputDirectoryLabel()
         progressScan = findViewById(R.id.progressScan)
         txtContentMessage = findViewById(R.id.txtContentMessage)
         recyclerCaches = findViewById(R.id.recyclerCaches)
@@ -168,11 +168,13 @@ class MainActivity : AppCompatActivity() {
     private fun fitContentBelowSystemBars(rootView: View, statusBarBackground: View) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val statusBarColor = ContextCompat.getColor(this, R.color.bili2media_background)
+        val isDarkMode = (resources.configuration.uiMode and
+            Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.white)
+        window.navigationBarColor = statusBarColor
         WindowInsetsControllerCompat(window, rootView).apply {
-            isAppearanceLightStatusBars = true
-            isAppearanceLightNavigationBars = true
+            isAppearanceLightStatusBars = !isDarkMode
+            isAppearanceLightNavigationBars = !isDarkMode
         }
 
         val initialLeft = rootView.paddingLeft
@@ -231,18 +233,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleSelectedTree(uri: Uri) {
-        val persisted = runCatching {
-            contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-        }.isSuccess
-        if (!persisted) {
+        if (!rootStore.saveTree(uri)) {
             showMessage(getString(R.string.directory_permission_failed), isError = true)
             return
         }
 
-        rootStore.saveTree(uri)
+        needsScanOnResume = false
         refreshHeaderAndScan()
     }
 
@@ -261,6 +257,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showStoragePermissionNoticeIfNeeded(): Boolean {
+        if (rootStore.current() is CacheRootSelection.Tree) {
+            return false
+        }
+
         if (permissionPreferences.getBoolean(KEY_STORAGE_PERMISSION_PROMPTED, false)) {
             return false
         }
@@ -280,6 +280,12 @@ class MainActivity : AppCompatActivity() {
                     .putBoolean(KEY_STORAGE_PERMISSION_PROMPTED, true)
                     .apply()
                 openAllFilesAccessSettings()
+            }
+            .setNegativeButton(R.string.storage_permission_choose_directory) { _, _ ->
+                permissionPreferences.edit()
+                    .putBoolean(KEY_STORAGE_PERMISSION_PROMPTED, true)
+                    .apply()
+                directoryPickerLauncher.launch(null)
             }
             .setCancelable(false)
             .showRounded()
@@ -310,13 +316,26 @@ class MainActivity : AppCompatActivity() {
 
             is CacheRootSelection.Tree -> {
                 val rootName = DocumentFile.fromTreeUri(this, selection.uri)?.name
-                    ?: selection.uri.toString()
+                    ?: getString(R.string.directory_custom_value)
                 txtInputDirectory.text = getString(
                     R.string.directory_path_format,
                     rootName
                 )
             }
         }
+        updateOutputDirectoryLabel()
+    }
+
+    private fun updateOutputDirectoryLabel() {
+        val selectedTree = outputDirectoryStore.currentTreeUri()
+        val outputDirectory = selectedTree?.let {
+            DocumentFile.fromTreeUri(this, it)?.name
+                ?: getString(R.string.directory_custom_value)
+        } ?: OutputDirectoryStore.DEFAULT_RELATIVE_PATH
+        txtOutputDirectory.text = getString(
+            R.string.directory_path_format,
+            outputDirectory
+        )
     }
 
     private fun scanDefaultDirectory() {

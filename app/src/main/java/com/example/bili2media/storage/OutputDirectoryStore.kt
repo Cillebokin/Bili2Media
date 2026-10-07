@@ -1,36 +1,36 @@
 package com.example.bili2media.storage
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.core.content.edit
-import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 
-class CacheRootStore(context: Context) {
+class OutputDirectoryStore(context: Context) {
     private val appContext = context.applicationContext
     private val preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
-    fun current(): CacheRootSelection {
+    fun currentTreeUri(): Uri? {
         val savedUri = preferences.getString(KEY_TREE_URI, null)
             ?.takeIf { it.isNotBlank() }
-            ?: return CacheRootSelection.Default
-        val uri = runCatching { savedUri.toUri() }.getOrNull()
+            ?: return null
+        val uri = runCatching { Uri.parse(savedUri) }.getOrNull()
         if (uri?.scheme != CONTENT_SCHEME) {
-            clearTree()
-            return CacheRootSelection.Default
+            useDefault()
+            return null
         }
-        return CacheRootSelection.Tree(uri)
+        return uri
     }
 
-    fun useDefault() {
-        clearTree()
-    }
+    fun displayName(): String? = currentTreeUri()
+        ?.let { DocumentFile.fromTreeUri(appContext, it)?.name }
 
     fun saveTree(uri: Uri): Boolean {
         if (uri.scheme != CONTENT_SCHEME) return false
         val accessPersisted = runCatching {
             appContext.contentResolver.takePersistableUriPermission(
                 uri,
-                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
         }.isSuccess
         if (!accessPersisted) return false
@@ -41,15 +41,15 @@ class CacheRootStore(context: Context) {
         return true
     }
 
-    fun clearTree() {
-        preferences.edit {
-            remove(KEY_TREE_URI)
-        }
+    fun useDefault() {
+        preferences.edit { remove(KEY_TREE_URI) }
     }
 
-    private companion object {
-        const val PREFERENCES_NAME = "cache_root"
-        const val KEY_TREE_URI = "tree_uri"
-        const val CONTENT_SCHEME = "content"
+    companion object {
+        const val DEFAULT_RELATIVE_PATH = "Download/Bili2Media/Output"
+
+        private const val PREFERENCES_NAME = "output_directory"
+        private const val KEY_TREE_URI = "tree_uri"
+        private const val CONTENT_SCHEME = "content"
     }
 }

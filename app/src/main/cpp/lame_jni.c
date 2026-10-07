@@ -16,7 +16,9 @@ Java_com_example_bili2media_export_mp3_engine_NativeLame_create(
         jint bitrate_kbps) {
     (void)env;
     (void)receiver;
-    if (sample_rate <= 0 || (channels != 1 && channels != 2) || bitrate_kbps != 192) {
+    if (sample_rate <= 0 || (channels != 1 && channels != 2) ||
+        (bitrate_kbps != 128 && bitrate_kbps != 192 &&
+         bitrate_kbps != 256 && bitrate_kbps != 320)) {
         return 0;
     }
 
@@ -26,7 +28,7 @@ Java_com_example_bili2media_export_mp3_engine_NativeLame_create(
     }
     if (lame_set_num_channels(encoder, channels) < 0 ||
         lame_set_in_samplerate(encoder, sample_rate) < 0 ||
-        /* MPEG-1 supports 192 kbps; use its 44.1 kHz grid for lower-rate AAC. */
+        /* Use the MPEG-1 44.1 kHz grid for lower-rate AAC input. */
         lame_set_out_samplerate(encoder, sample_rate < 32000 ? 44100 : sample_rate) < 0 ||
         lame_set_mode(encoder, channels == 1 ? MONO : JOINT_STEREO) < 0 ||
         lame_set_VBR(encoder, vbr_off) < 0 ||

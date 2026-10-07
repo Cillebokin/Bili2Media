@@ -6,6 +6,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import com.example.bili2media.export.output.SelectedOutputDirectory
+import com.example.bili2media.storage.OutputDirectoryStore
 
 class MediaStoreM4aOutputStore(
     context: Context,
@@ -13,6 +15,7 @@ class MediaStoreM4aOutputStore(
     private val timestampProvider: () -> Long = System::currentTimeMillis
 ) : M4aOutputStore {
     private val contentResolver: ContentResolver = context.applicationContext.contentResolver
+    private val selectedOutputDirectory = SelectedOutputDirectory(context)
 
     fun suggestDuplicateName(title: String): String? {
         return synchronized(CREATE_LOCK) {
@@ -31,6 +34,13 @@ class MediaStoreM4aOutputStore(
                 queryExistingNames(),
                 timestampProvider()
             )
+            selectedOutputDirectory.createFile(displayName, M4A_MIME_TYPE)?.let { uri ->
+                return@synchronized M4aPendingOutput(
+                    uri.toString(),
+                    displayName,
+                    isUserSelectedDirectory = true
+                )
+            }
             val values = ContentValues().apply {
                 put(MediaStore.Downloads.DISPLAY_NAME, displayName)
                 put(MediaStore.Downloads.MIME_TYPE, M4A_MIME_TYPE)
@@ -46,6 +56,8 @@ class MediaStoreM4aOutputStore(
     }
 
     override fun commit(output: M4aPendingOutput) {
+        if (output.isUserSelectedDirectory) return
+
         val values = ContentValues().apply {
             put(MediaStore.Downloads.IS_PENDING, 0)
         }
@@ -54,10 +66,16 @@ class MediaStoreM4aOutputStore(
     }
 
     override fun abandon(output: M4aPendingOutput) {
-        contentResolver.delete(Uri.parse(output.uri), null, null)
+        if (output.isUserSelectedDirectory) {
+            selectedOutputDirectory.deleteFile(Uri.parse(output.uri))
+        } else {
+            contentResolver.delete(Uri.parse(output.uri), null, null)
+        }
     }
 
     private fun queryExistingNames(): Set<String> {
+        selectedOutputDirectory.existingFileNames()?.let { return it }
+
         val names = mutableSetOf<String>()
         val queryArgs = Bundle().apply {
             putString(
@@ -86,7 +104,7 @@ class MediaStoreM4aOutputStore(
     }
 
     companion object {
-        const val OUTPUT_RELATIVE_PATH = "Download/Bili2Media/Output"
+        const val OUTPUT_RELATIVE_PATH = OutputDirectoryStore.DEFAULT_RELATIVE_PATH
         private const val M4A_MIME_TYPE = "audio/mp4"
         private val CREATE_LOCK = Any()
     }

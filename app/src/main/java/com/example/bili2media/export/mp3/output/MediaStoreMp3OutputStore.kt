@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import com.example.bili2media.export.output.MediaStoreMp4OutputStore
+import com.example.bili2media.export.output.SelectedOutputDirectory
 
 class MediaStoreMp3OutputStore(
     context: Context,
@@ -14,6 +15,7 @@ class MediaStoreMp3OutputStore(
     private val timestampProvider: () -> Long = System::currentTimeMillis
 ) : Mp3OutputStore {
     private val contentResolver: ContentResolver = context.applicationContext.contentResolver
+    private val selectedOutputDirectory = SelectedOutputDirectory(context)
 
     fun suggestDuplicateName(title: String): String? = synchronized(CREATE_LOCK) {
         fileNameResolver.suggestDuplicateName(title, queryExistingNames(), timestampProvider())
@@ -21,6 +23,13 @@ class MediaStoreMp3OutputStore(
 
     override fun create(title: String): Mp3PendingOutput = synchronized(CREATE_LOCK) {
         val displayName = fileNameResolver.resolve(title, queryExistingNames(), timestampProvider())
+        selectedOutputDirectory.createFile(displayName, MP3_MIME_TYPE)?.let { uri ->
+            return@synchronized Mp3PendingOutput(
+                uri.toString(),
+                displayName,
+                isUserSelectedDirectory = true
+            )
+        }
         val values = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, displayName)
             put(MediaStore.Downloads.MIME_TYPE, MP3_MIME_TYPE)
@@ -33,6 +42,8 @@ class MediaStoreMp3OutputStore(
     }
 
     override fun commit(output: Mp3PendingOutput) {
+        if (output.isUserSelectedDirectory) return
+
         val updated = contentResolver.update(
             Uri.parse(output.uri),
             ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) },
@@ -43,10 +54,16 @@ class MediaStoreMp3OutputStore(
     }
 
     override fun abandon(output: Mp3PendingOutput) {
-        contentResolver.delete(Uri.parse(output.uri), null, null)
+        if (output.isUserSelectedDirectory) {
+            selectedOutputDirectory.deleteFile(Uri.parse(output.uri))
+        } else {
+            contentResolver.delete(Uri.parse(output.uri), null, null)
+        }
     }
 
     private fun queryExistingNames(): Set<String> {
+        selectedOutputDirectory.existingFileNames()?.let { return it }
+
         val names = mutableSetOf<String>()
         val queryArgs = Bundle().apply {
             putString(

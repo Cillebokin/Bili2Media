@@ -8,6 +8,7 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.net.Uri
+import com.example.bili2media.AppSettings
 import com.example.bili2media.cache.model.MediaInputRef
 import com.example.bili2media.export.mp3.model.Mp3ExportPlan
 import com.example.bili2media.export.model.MediaTrackSelection
@@ -19,7 +20,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt
 
-class AndroidMp3ExportEngine(context: Context) : Mp3ExportEngine {
+class AndroidMp3ExportEngine(
+    context: Context,
+    private val bitrateKbps: Int = AppSettings.DEFAULT_MP3_BITRATE_KBPS
+) : Mp3ExportEngine {
     private val contentResolver: ContentResolver = context.applicationContext.contentResolver
 
     override fun export(
@@ -206,7 +210,7 @@ class AndroidMp3ExportEngine(context: Context) : Mp3ExportEngine {
             throw Mp3ExportException(Mp3EngineError.UNSUPPORTED_AUDIO_FORMAT)
         }
         return try {
-            LameMp3Encoder(sampleRate, channels)
+            LameMp3Encoder(sampleRate, channels, bitrateKbps)
         } catch (_: Exception) {
             throw Mp3ExportException(Mp3EngineError.ENCODER_FAILED)
         }

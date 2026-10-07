@@ -66,7 +66,8 @@
                 android:padding="4dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/png_help_question_icon"
-                android:tint="@color/bili2media_icon" />
+                android:tint="@color/bili2media_icon"
+                android:visibility="gone" />
 
             <ImageButton
                 android:id="@+id/btnSettings"

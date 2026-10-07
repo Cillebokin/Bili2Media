@@ -5,22 +5,59 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.documentfile.provider.DocumentFile
+import com.example.bili2media.storage.CacheRootSelection
+import com.example.bili2media.storage.CacheRootStore
+import com.example.bili2media.storage.DefaultCacheDirectory
+import com.example.bili2media.storage.OutputDirectoryStore
 import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
+    private val cacheRootStore by lazy { CacheRootStore(this) }
+    private val outputDirectoryStore by lazy { OutputDirectoryStore(this) }
+
+    private val inputDirectoryPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            if (!cacheRootStore.saveTree(uri)) {
+                showDirectoryPermissionError()
+            }
+            updateDirectoryValues()
+        }
+    }
+
+    private val outputDirectoryPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            if (!outputDirectoryStore.saveTree(uri)) {
+                showDirectoryPermissionError()
+            }
+            updateDirectoryValues()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        findViewById<View>(R.id.btnBack).setOnClickListener { finish() }
         bindLanguageSetting()
+        bindDarkModeSetting()
+        bindDirectorySettings()
+        bindMp3BitrateSetting()
         fitContentBelowSystemBars(findViewById(R.id.main), findViewById(R.id.statusBarBackground))
     }
 
@@ -75,6 +112,151 @@ class SettingsActivity : AppCompatActivity() {
         val language = (applicationLocale ?: resources.configuration.locales.get(0)).language
             .lowercase(Locale.ROOT)
         return if (language == ENGLISH_LANGUAGE_TAG) ENGLISH_LANGUAGE_INDEX else CHINESE_LANGUAGE_INDEX
+    }
+
+    private fun bindDarkModeSetting() {
+        val darkModeSwitch = findViewById<SwitchCompat>(R.id.switchDarkMode)
+        darkModeSwitch.isChecked = AppSettings.isDarkModeEnabled(this)
+        darkModeSwitch.setOnCheckedChangeListener { _, enabled ->
+            AppSettings.setDarkModeEnabled(this, enabled)
+        }
+    }
+
+    private fun bindMp3BitrateSetting() {
+        val bitrateRow = findViewById<View>(R.id.rowMp3Bitrate)
+        val bitrateValue = findViewById<TextView>(R.id.tvMp3BitrateValue)
+        updateMp3BitrateValue(bitrateRow, bitrateValue)
+
+        bitrateRow.setOnClickListener {
+            val bitrates = AppSettings.MP3_BITRATE_OPTIONS_KBPS
+            val options = bitrates.map { bitrate ->
+                getString(R.string.mp3_bitrate_value_format, bitrate)
+            }.toTypedArray()
+            val selectedIndex = bitrates.indexOf(AppSettings.getMp3BitrateKbps(this))
+            AlertDialog.Builder(this)
+                .setTitle(R.string.mp3_bitrate)
+                .setSingleChoiceItems(options, selectedIndex) { dialog, index ->
+                    dialog.dismiss()
+                    val selectedBitrate = bitrates.getOrNull(index) ?: return@setSingleChoiceItems
+                    AppSettings.setMp3BitrateKbps(this, selectedBitrate)
+                    updateMp3BitrateValue(bitrateRow, bitrateValue)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+    }
+
+    private fun bindDirectorySettings() {
+        val inputDirectoryRow = findViewById<View>(R.id.rowInputDirectory)
+        val inputDirectoryValue = findViewById<TextView>(R.id.tvInputDirectoryValue)
+        val outputDirectoryRow = findViewById<View>(R.id.rowOutputDirectory)
+        val outputDirectoryValue = findViewById<TextView>(R.id.tvOutputDirectoryValue)
+
+        updateDirectoryValues()
+
+        inputDirectoryRow.setOnClickListener {
+            val selection = cacheRootStore.current()
+            val selectedTree = selection as? CacheRootSelection.Tree
+            showDirectoryActions(
+                titleRes = R.string.input_directory_label,
+                hasCustomDirectory = selectedTree != null,
+                chooseDirectory = {
+                    inputDirectoryPickerLauncher.launch(selectedTree?.uri)
+                },
+                useDefaultDirectory = {
+                    cacheRootStore.useDefault()
+                    updateDirectoryValues()
+                }
+            )
+        }
+
+        outputDirectoryRow.setOnClickListener {
+            val selectedTree = outputDirectoryStore.currentTreeUri()
+            showDirectoryActions(
+                titleRes = R.string.output_directory_label,
+                hasCustomDirectory = selectedTree != null,
+                chooseDirectory = {
+                    outputDirectoryPickerLauncher.launch(selectedTree)
+                },
+                useDefaultDirectory = {
+                    outputDirectoryStore.useDefault()
+                    updateDirectoryValues()
+                }
+            )
+        }
+
+        inputDirectoryValue.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        outputDirectoryValue.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+    }
+
+    private fun showDirectoryActions(
+        titleRes: Int,
+        hasCustomDirectory: Boolean,
+        chooseDirectory: () -> Unit,
+        useDefaultDirectory: () -> Unit
+    ) {
+        val options = if (hasCustomDirectory) {
+            arrayOf(
+                getString(R.string.directory_choose_other),
+                getString(R.string.directory_use_default)
+            )
+        } else {
+            arrayOf(getString(R.string.directory_choose_folder))
+        }
+        AlertDialog.Builder(this)
+            .setTitle(titleRes)
+            .setItems(options) { _, selectedIndex ->
+                if (hasCustomDirectory && selectedIndex == 1) {
+                    useDefaultDirectory()
+                } else {
+                    chooseDirectory()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun updateDirectoryValues() {
+        val inputDirectoryRow = findViewById<View>(R.id.rowInputDirectory)
+        val inputDirectoryValue = findViewById<TextView>(R.id.tvInputDirectoryValue)
+        val inputSelection = cacheRootStore.current()
+        val inputDirectoryName = when (inputSelection) {
+            CacheRootSelection.Default -> DefaultCacheDirectory.DISPLAY_PATH
+            is CacheRootSelection.Tree -> DocumentFile.fromTreeUri(this, inputSelection.uri)?.name
+                ?: getString(R.string.directory_custom_value)
+        }
+        inputDirectoryValue.text = inputDirectoryName
+        inputDirectoryRow.contentDescription = getString(
+            R.string.input_directory_setting_accessibility_description,
+            inputDirectoryName
+        )
+
+        val outputDirectoryRow = findViewById<View>(R.id.rowOutputDirectory)
+        val outputDirectoryValue = findViewById<TextView>(R.id.tvOutputDirectoryValue)
+        val outputDirectoryName = outputDirectoryStore.displayName()
+            ?: if (outputDirectoryStore.currentTreeUri() == null) {
+                OutputDirectoryStore.DEFAULT_RELATIVE_PATH
+            } else {
+                getString(R.string.directory_custom_value)
+            }
+        outputDirectoryValue.text = outputDirectoryName
+        outputDirectoryRow.contentDescription = getString(
+            R.string.output_directory_setting_accessibility_description,
+            outputDirectoryName
+        )
+    }
+
+    private fun showDirectoryPermissionError() {
+        Toast.makeText(this, R.string.directory_permission_failed, Toast.LENGTH_LONG).show()
+    }
+
+    private fun updateMp3BitrateValue(bitrateRow: View, bitrateValue: TextView) {
+        val bitrate = AppSettings.getMp3BitrateKbps(this)
+        bitrateValue.text = getString(R.string.mp3_bitrate_value_format, bitrate)
+        bitrateRow.contentDescription = getString(
+            R.string.mp3_bitrate_setting_accessibility_description,
+            bitrate
+        )
     }
 
     private fun fitContentBelowSystemBars(rootView: View, statusBarBackground: View) {

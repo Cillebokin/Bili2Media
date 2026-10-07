@@ -149,6 +149,177 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/cardDirectorySettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_settings_card"
+                android:elevation="@dimen/card_elevation"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="@string/directory_settings"
+                    android:textColor="@color/bili2media_settings_text_primary"
+                    android:textSize="@dimen/text_section"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/rowInputDirectory"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:importantForAccessibility="yes"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:importantForAccessibility="no"
+                        android:text="@string/input_directory_label"
+                        android:textColor="@color/bili2media_settings_text_primary"
+                        android:textSize="@dimen/text_section"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvInputDirectoryValue"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:drawableEnd="@drawable/ic_chevron_right_24"
+                        android:drawablePadding="8dp"
+                        android:ellipsize="middle"
+                        android:gravity="center_vertical|end"
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:textColor="@color/bili2media_settings_text_secondary"
+                        android:textSize="@dimen/text_body" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowOutputDirectory"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:importantForAccessibility="yes"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:importantForAccessibility="no"
+                        android:text="@string/output_directory_label"
+                        android:textColor="@color/bili2media_settings_text_primary"
+                        android:textSize="@dimen/text_section"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvOutputDirectoryValue"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:drawableEnd="@drawable/ic_chevron_right_24"
+                        android:drawablePadding="8dp"
+                        android:ellipsize="middle"
+                        android:gravity="center_vertical|end"
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:textColor="@color/bili2media_settings_text_secondary"
+                        android:textSize="@dimen/text_body" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardExportSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_settings_card"
+                android:elevation="@dimen/card_elevation"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="@string/export_settings"
+                    android:textColor="@color/bili2media_settings_text_primary"
+                    android:textSize="@dimen/text_section"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/rowMp3Bitrate"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:importantForAccessibility="yes"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:importantForAccessibility="no"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/mp3_bitrate"
+                            android:textColor="@color/bili2media_settings_text_primary"
+                            android:textSize="@dimen/text_section"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/mp3_lossy_hint"
+                            android:textColor="@color/bili2media_settings_text_secondary"
+                            android:textSize="@dimen/text_caption" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvMp3BitrateValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:drawableEnd="@drawable/ic_chevron_right_24"
+                        android:drawablePadding="8dp"
+                        android:gravity="center_vertical"
+                        android:importantForAccessibility="no"
+                        android:textColor="@color/bili2media_settings_text_secondary"
+                        android:textSize="@dimen/text_body" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/cardAbout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
