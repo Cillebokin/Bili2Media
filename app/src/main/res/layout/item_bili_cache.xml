@@ -163,6 +163,23 @@
             android:textColor="@color/white"
             android:textSize="@dimen/text_caption"
             app:backgroundTint="@null" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnMp3ExportAction"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/export_button_height"
+            android:layout_marginStart="@dimen/space_sm"
+            android:background="@drawable/bg_export_button"
+            android:gravity="center"
+            android:minWidth="@dimen/export_button_min_width"
+            android:minHeight="0dp"
+            android:paddingStart="@dimen/space_md"
+            android:paddingEnd="@dimen/space_md"
+            android:text="@string/export_mp3"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_caption"
+            app:backgroundTint="@null" />
     </LinearLayout>
 
 </LinearLayout>

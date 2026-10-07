@@ -19,12 +19,13 @@ import com.example.bili2media.ui.image.CoverImageLoader
 class BiliCacheAdapter(
     private val coverImageLoader: CoverImageLoader,
     private val onExport: (BiliCacheEntry) -> Unit,
-    private val onM4aExport: (BiliCacheEntry) -> Unit
+    private val onM4aExport: (BiliCacheEntry) -> Unit,
+    private val onMp3Export: (BiliCacheEntry) -> Unit
 ) : ListAdapter<BiliCacheListItem, BiliCacheAdapter.CacheViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CacheViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_bili_cache, parent, false)
-        return CacheViewHolder(view, coverImageLoader, onExport, onM4aExport)
+        return CacheViewHolder(view, coverImageLoader, onExport, onM4aExport, onMp3Export)
     }
 
     override fun onBindViewHolder(holder: CacheViewHolder, position: Int) {
@@ -35,7 +36,8 @@ class BiliCacheAdapter(
         itemView: View,
         private val coverImageLoader: CoverImageLoader,
         private val onExport: (BiliCacheEntry) -> Unit,
-        private val onM4aExport: (BiliCacheEntry) -> Unit
+        private val onM4aExport: (BiliCacheEntry) -> Unit,
+        private val onMp3Export: (BiliCacheEntry) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
         private val imgCover: ImageView = itemView.findViewById(R.id.imgCacheCover)
         private val txtTitle: TextView = itemView.findViewById(R.id.txtCacheTitle)
@@ -45,6 +47,7 @@ class BiliCacheAdapter(
         private val txtPath: TextView = itemView.findViewById(R.id.txtCachePath)
         private val btnExportAction: Button = itemView.findViewById(R.id.btnExportAction)
         private val btnM4aExportAction: Button = itemView.findViewById(R.id.btnM4aExportAction)
+        private val btnMp3ExportAction: Button = itemView.findViewById(R.id.btnMp3ExportAction)
 
         fun bind(item: BiliCacheListItem) {
             val entry = item.entry
@@ -66,6 +69,9 @@ class BiliCacheAdapter(
             btnM4aExportAction.setText(R.string.export_m4a)
             btnM4aExportAction.isEnabled = exportEnabled
             btnM4aExportAction.setOnClickListener { onM4aExport(entry) }
+            btnMp3ExportAction.setText(R.string.export_mp3)
+            btnMp3ExportAction.isEnabled = exportEnabled
+            btnMp3ExportAction.setOnClickListener { onMp3Export(entry) }
         }
     }
 

@@ -35,6 +35,7 @@ import com.example.bili2media.cache.model.BiliCacheEntry
 import com.example.bili2media.cache.scanner.DocumentTreeBiliCacheScanner
 import com.example.bili2media.cache.scanner.FileBiliCacheScanner
 import com.example.bili2media.export.m4a.output.MediaStoreM4aOutputStore
+import com.example.bili2media.export.mp3.output.MediaStoreMp3OutputStore
 import com.example.bili2media.export.output.CacheEntryExportTitleResolver
 import com.example.bili2media.export.output.MediaStoreMp4OutputStore
 import com.example.bili2media.storage.CacheRootSelection
@@ -48,6 +49,8 @@ import com.example.bili2media.ui.export.Mp4ExportUiState
 import com.example.bili2media.ui.export.Mp4ExportViewModel
 import com.example.bili2media.ui.export.m4a.M4aExportUiState
 import com.example.bili2media.ui.export.m4a.M4aExportViewModel
+import com.example.bili2media.ui.export.mp3.Mp3ExportUiState
+import com.example.bili2media.ui.export.mp3.Mp3ExportViewModel
 import com.example.bili2media.ui.image.CoilCoverImageLoader
 import java.io.File
 import java.util.concurrent.Executors
@@ -66,7 +69,8 @@ class MainActivity : AppCompatActivity() {
         BiliCacheAdapter(
             coverImageLoader = CoilCoverImageLoader(),
             onExport = ::enqueueExport,
-            onM4aExport = ::enqueueM4aExport
+            onM4aExport = ::enqueueM4aExport,
+            onMp3Export = ::enqueueMp3Export
         )
     }
     private val scanExecutor = Executors.newSingleThreadExecutor()
@@ -74,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     private val rootStore by lazy { CacheRootStore(this) }
     private val mp4OutputStore by lazy { MediaStoreMp4OutputStore(this) }
     private val m4aOutputStore by lazy { MediaStoreM4aOutputStore(this) }
+    private val mp3OutputStore by lazy { MediaStoreMp3OutputStore(this) }
     private val exportTitleResolver by lazy { CacheEntryExportTitleResolver() }
     private val permissionPreferences by lazy {
         getSharedPreferences(PERMISSION_PREFERENCES_NAME, MODE_PRIVATE)
@@ -86,6 +91,7 @@ class MainActivity : AppCompatActivity() {
     private var scannedEntries: List<BiliCacheEntry> = emptyList()
     private var latestExportStates: Map<String, Mp4ExportUiState> = emptyMap()
     private var latestM4aExportStates: Map<String, M4aExportUiState> = emptyMap()
+    private var latestMp3ExportStates: Map<String, Mp3ExportUiState> = emptyMap()
     private var exportProgressDialog: AlertDialog? = null
     private var exportProgressMessage: TextView? = null
     private var exportProgressBar: ProgressBar? = null
@@ -94,6 +100,7 @@ class MainActivity : AppCompatActivity() {
     private var exportCancellationRequested = false
     private lateinit var exportViewModel: Mp4ExportViewModel
     private lateinit var m4aExportViewModel: M4aExportViewModel
+    private lateinit var mp3ExportViewModel: Mp3ExportViewModel
 
     private val allFilesAccessLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -142,6 +149,11 @@ class MainActivity : AppCompatActivity() {
         m4aExportViewModel = ViewModelProvider(this)[M4aExportViewModel::class.java]
         m4aExportViewModel.states.observe(this) { states ->
             latestM4aExportStates = states.orEmpty()
+            updateExportProgressDialog()
+        }
+        mp3ExportViewModel = ViewModelProvider(this)[Mp3ExportViewModel::class.java]
+        mp3ExportViewModel.states.observe(this) { states ->
+            latestMp3ExportStates = states.orEmpty()
             updateExportProgressDialog()
         }
 
@@ -476,6 +488,28 @@ class MainActivity : AppCompatActivity() {
         m4aExportViewModel.enqueue(entry)
     }
 
+    private fun enqueueMp3Export(entry: BiliCacheEntry) {
+        val title = exportTitleResolver.resolve(entry.title, entry.subtitle)
+        val duplicateName = mp3OutputStore.suggestDuplicateName(title)
+        if (duplicateName == null) {
+            startMp3Export(entry)
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.export_duplicate_title)
+            .setMessage(getString(R.string.export_duplicate_message, duplicateName))
+            .setPositiveButton(R.string.export_duplicate_continue) { _, _ ->
+                startMp3Export(entry)
+            }
+            .setNegativeButton(R.string.cancel_export, null)
+            .showRounded()
+    }
+
+    private fun startMp3Export(entry: BiliCacheEntry) {
+        mp3ExportViewModel.enqueue(entry)
+    }
+
     private fun updateExportProgressDialog() {
         while (true) {
             val task = exportProgressTask ?: firstActiveExportTask()
@@ -548,6 +582,11 @@ class MainActivity : AppCompatActivity() {
             state.toProgressInfo()?.completion == null &&
                 state.toProgressInfo() != null
         }?.let { return ExportTaskKey(it.key, ExportFormat.M4A) }
+
+        latestMp3ExportStates.entries.firstOrNull { (_, state) ->
+            state.toProgressInfo()?.completion == null &&
+                state.toProgressInfo() != null
+        }?.let { return ExportTaskKey(it.key, ExportFormat.MP3) }
         return null
     }
 
@@ -555,6 +594,7 @@ class MainActivity : AppCompatActivity() {
         return when (task.format) {
             ExportFormat.MP4 -> latestExportStates[task.entryId]?.toProgressInfo()
             ExportFormat.M4A -> latestM4aExportStates[task.entryId]?.toProgressInfo()
+            ExportFormat.MP3 -> latestMp3ExportStates[task.entryId]?.toProgressInfo()
         }
     }
 
@@ -612,6 +652,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun Mp3ExportUiState.toProgressInfo(): ExportProgressInfo? {
+        return when (this) {
+            Mp3ExportUiState.Idle -> null
+            Mp3ExportUiState.Queued -> ExportProgressInfo(R.string.export_status_queued)
+            Mp3ExportUiState.Analyzing -> ExportProgressInfo(R.string.export_status_analyzing)
+            is Mp3ExportUiState.Exporting -> ExportProgressInfo(
+                messageRes = R.string.export_status_progress,
+                progress = progress
+            )
+
+            is Mp3ExportUiState.Succeeded -> ExportProgressInfo(
+                messageRes = R.string.export_status_succeeded,
+                completion = ExportCompletion.SUCCEEDED
+            )
+
+            is Mp3ExportUiState.Failed -> ExportProgressInfo(
+                messageRes = R.string.export_status_failed,
+                completion = ExportCompletion.FAILED
+            )
+
+            Mp3ExportUiState.Cancelled -> ExportProgressInfo(
+                messageRes = R.string.export_status_cancelled,
+                completion = ExportCompletion.CANCELLED
+            )
+        }
+    }
+
     private fun ensureExportProgressDialog(task: ExportTaskKey) {
         if (exportProgressDialog != null) return
 
@@ -651,6 +718,7 @@ class MainActivity : AppCompatActivity() {
         val titleRes = when (task.format) {
             ExportFormat.MP4 -> R.string.export_dialog_mp4_title
             ExportFormat.M4A -> R.string.export_dialog_m4a_title
+            ExportFormat.MP3 -> R.string.export_dialog_mp3_title
         }
         val dialog = AlertDialog.Builder(this)
             .setTitle(titleRes)
@@ -680,6 +748,7 @@ class MainActivity : AppCompatActivity() {
         when (task.format) {
             ExportFormat.MP4 -> exportViewModel.cancel(task.entryId)
             ExportFormat.M4A -> m4aExportViewModel.cancel(task.entryId)
+            ExportFormat.MP3 -> mp3ExportViewModel.cancel(task.entryId)
         }
     }
 
@@ -697,7 +766,8 @@ class MainActivity : AppCompatActivity() {
 
     private enum class ExportFormat {
         MP4,
-        M4A
+        M4A,
+        MP3
     }
 
     private enum class ExportCompletion {
