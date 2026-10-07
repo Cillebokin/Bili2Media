@@ -10,14 +10,14 @@
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
             <corners android:radius="8dp" />
-            <solid android:color="@color/bili2media_accent_pressed" />
+            <solid android:color="@color/bili2media_export_button_pressed" />
         </shape>
     </item>
 
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="8dp" />
-            <solid android:color="@color/bili2media_accent" />
+            <solid android:color="@color/bili2media_export_button" />
         </shape>
     </item>
 </selector>

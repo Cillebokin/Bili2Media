@@ -4,7 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main"
     tools:context=".MainActivity">
+
+    <View
+        android:id="@+id/statusBarBackground"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/bili2media_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/headerCard"
@@ -16,89 +26,132 @@
         android:background="@drawable/bg_home_card"
         android:elevation="2dp"
         android:orientation="vertical"
-        android:padding="@dimen/space_lg"
+        android:paddingStart="@dimen/space_lg"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingEnd="@dimen/space_lg"
+        android:paddingBottom="@dimen/space_sm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/statusBarBackground">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:includeFontPadding="false"
-            android:text="@string/app_name"
-            android:textColor="@color/bili2media_text_primary"
-            android:textSize="@dimen/text_title"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:text="@string/scanner_subtitle"
-            android:textColor="@color/bili2media_text_secondary"
-            android:textSize="@dimen/text_body" />
-
-        <TextView
-            android:id="@+id/txtCurrentDirectory"
+        <LinearLayout
+            android:id="@+id/linearLayoutTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:ellipsize="middle"
-            android:maxLines="2"
-            android:textColor="@color/bili2media_text_primary"
-            android:textSize="@dimen/text_caption"
-            tools:text="目录：Download/Bili2Media/Input" />
+            android:layout_height="28dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/txtAccessStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:textColor="@color/bili2media_text_secondary"
-            android:textSize="@dimen/text_caption"
-            tools:text="默认目录需要所有文件访问权限" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.02"
+                android:text="@string/app_name"
+                android:textColor="@color/bili2media_text_primary"
+                android:textSize="@dimen/text_title" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/btnHelp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/help_information"
+                android:padding="4dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/png_help_question_icon"
+                android:tint="@color/bili2media_icon" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/settings"
+                android:padding="4dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/png_cog_icon"
+                android:tint="@color/bili2media_icon" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/actionCard"
+        android:id="@+id/pathCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/space_md"
         android:layout_marginTop="@dimen/space_sm"
         android:layout_marginEnd="@dimen/space_md"
         android:background="@drawable/bg_home_card"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="@dimen/space_sm"
+        android:elevation="2dp"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_lg"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingEnd="@dimen/space_lg"
+        android:paddingBottom="@dimen/space_sm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerCard">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGrantAccess"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minHeight="44dp"
-            android:text="@string/grant_access" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnChooseDirectory"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_sm"
-            android:layout_weight="1"
-            android:minHeight="44dp"
-            android:text="@string/choose_directory" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/input_directory_label"
+                android:textColor="@color/bili2media_text_primary"
+                android:textSize="@dimen/text_body" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRefresh"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_sm"
-            android:layout_weight="1"
-            android:minHeight="44dp"
-            android:text="@string/refresh" />
+            <TextView
+                android:id="@+id/txtInputDirectory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:layout_weight="1"
+                android:ellipsize="middle"
+                android:gravity="start"
+                android:maxLines="1"
+                android:textColor="@color/bili2media_text_secondary"
+                android:textSize="@dimen/text_caption"
+                tools:text="Download/Bili2Media/Input" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/output_directory_label"
+                android:textColor="@color/bili2media_text_primary"
+                android:textSize="@dimen/text_body" />
+
+            <TextView
+                android:id="@+id/txtOutputDirectory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:layout_weight="1"
+                android:ellipsize="middle"
+                android:gravity="start"
+                android:maxLines="1"
+                android:textColor="@color/bili2media_text_secondary"
+                android:textSize="@dimen/text_caption"
+                tools:text="Download/Bili2Media/Output" />
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout
@@ -111,10 +164,11 @@
         android:layout_marginBottom="@dimen/space_md"
         android:background="@drawable/bg_home_card"
         android:clipToOutline="true"
+        android:elevation="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/actionCard">
+        app:layout_constraintTop_toBottomOf="@id/pathCard">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerCaches"

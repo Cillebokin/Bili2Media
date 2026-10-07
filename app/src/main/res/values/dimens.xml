@@ -10,8 +10,6 @@
     <dimen name="cache_cover_width">112dp</dimen>
     <dimen name="cache_cover_height">63dp</dimen>
     <dimen name="cache_cover_corner_radius">8dp</dimen>
-    <dimen name="export_progress_size">18dp</dimen>
-    <dimen name="export_row_spacing">8dp</dimen>
     <dimen name="export_button_min_width">88dp</dimen>
     <dimen name="export_button_height">40dp</dimen>
 </resources>

@@ -14,6 +14,16 @@ class MediaStoreMp4OutputStore(
 ) : Mp4OutputStore {
     private val contentResolver: ContentResolver = context.applicationContext.contentResolver
 
+    fun suggestDuplicateName(title: String): String? {
+        return synchronized(CREATE_LOCK) {
+            fileNameResolver.suggestDuplicateName(
+                title = title,
+                existingNames = queryExistingNames(),
+                timestamp = timestampProvider()
+            )
+        }
+    }
+
     override fun create(title: String): Mp4PendingOutput {
         return synchronized(CREATE_LOCK) {
             val displayName = fileNameResolver.resolve(

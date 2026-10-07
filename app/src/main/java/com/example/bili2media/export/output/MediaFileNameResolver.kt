@@ -3,6 +3,26 @@ package com.example.bili2media.export.output
 import java.util.Locale
 
 class MediaFileNameResolver {
+    fun suggestDuplicateName(
+        title: String,
+        existingNames: Set<String>,
+        timestamp: Long,
+        extension: String,
+        fallbackPrefix: String
+    ): String? {
+        val defaultName = resolve(
+            title = title,
+            existingNames = emptySet(),
+            timestamp = timestamp,
+            extension = extension,
+            fallbackPrefix = fallbackPrefix
+        )
+        if (existingNames.none { it.equals(defaultName, ignoreCase = true) }) {
+            return null
+        }
+        return resolve(title, existingNames, timestamp, extension, fallbackPrefix)
+    }
+
     fun resolve(
         title: String,
         existingNames: Set<String>,
