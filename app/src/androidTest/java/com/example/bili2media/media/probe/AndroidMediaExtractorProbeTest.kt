@@ -78,6 +78,9 @@ class AndroidMediaExtractorProbeTest {
                 tracks.map { it.kind }.toSet()
             )
             assertTrue(tracks.all { it.durationUs != null && it.durationUs > 0L })
+            val audio = tracks.single { it.kind == MediaTrackKind.AUDIO }
+            assertTrue(requireNotNull(audio.sampleRate) > 0)
+            assertTrue(requireNotNull(audio.channelCount) > 0)
         } finally {
             context.contentResolver.delete(uri, null, null)
             source.delete()

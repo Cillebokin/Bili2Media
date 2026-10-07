@@ -25,11 +25,19 @@
     <string name="mp4_export_notification_analyzing">Analyzing cache</string>
     <string name="mp4_export_notification_progress">Exporting %1$d%%</string>
     <string name="mp4_export_notification_cancel">Cancel</string>
+    <string name="m4a_export_notification_channel_name">M4A exports</string>
+    <string name="m4a_export_notification_title">Exporting M4A</string>
+    <string name="m4a_export_notification_analyzing">Analyzing cache</string>
+    <string name="m4a_export_notification_progress">Exporting %1$d%%</string>
+    <string name="m4a_export_notification_cancel">Cancel</string>
     <string name="export_mp4">导出 MP4</string>
+    <string name="export_m4a">导出 M4A</string>
     <string name="cancel_export">取消</string>
     <string name="open_mp4">打开 MP4</string>
+    <string name="open_m4a">打开 M4A</string>
     <string name="retry_export">重试</string>
     <string name="export_status_ready">可无损导出为 MP4</string>
+    <string name="m4a_export_status_ready">可无损导出为 M4A</string>
     <string name="export_status_queued">等待导出</string>
     <string name="export_status_analyzing">正在分析媒体轨道</string>
     <string name="export_status_progress">正在导出 %1$d%%</string>
@@ -37,4 +45,5 @@
     <string name="export_status_failed">导出失败，点击重试</string>
     <string name="export_status_cancelled">导出已取消</string>
     <string name="open_mp4_failed">没有可打开 MP4 的应用</string>
+    <string name="open_m4a_failed">没有可打开 M4A 的应用</string>
 </resources>

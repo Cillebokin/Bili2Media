@@ -12,10 +12,14 @@ import java.util.Locale
 
 class DocumentCacheMediaLocator(
     private val documentResolver: (String) -> DocumentFile?,
+    private val childLister: DocumentChildLister = DocumentChildLister { directory ->
+        directory.listFiles().toList()
+    },
     private val entryFileSelector: BiliCacheEntryFileSelector = BiliCacheEntryFileSelector()
 ) : CacheMediaLocator {
     constructor(context: Context) : this(
-        documentResolver = { uri -> DocumentFile.fromSingleUri(context, uri.toUri()) }
+        documentResolver = createDocumentResolver(context),
+        childLister = DocumentsContractDocumentChildLister(context)
     )
 
     override fun locate(location: CacheEntryLocation): List<CacheMediaFile> {
@@ -38,7 +42,7 @@ class DocumentCacheMediaLocator(
                 continue
             }
 
-            val children = safeListFiles(directory)
+            val children = safeListChildren(directory)
             if (node.relativePath.isNotEmpty() && selectEntryFile(children) != null) {
                 continue
             }
@@ -50,7 +54,7 @@ class DocumentCacheMediaLocator(
                 val childRelativePath = joinPath(node.relativePath, childName)
                 when {
                     child.isDirectory -> pending.add(Node(child, childRelativePath))
-                    child.isFile && isMp4ExportInputFileName(childName) -> {
+                    child.isFile && isExportInputFileName(childName) -> {
                         result += CacheMediaFile(
                             name = childName,
                             relativePath = childRelativePath,
@@ -73,8 +77,8 @@ class DocumentCacheMediaLocator(
         return entryFileSelector.select(files.filter { it.isFile }) { it.name.orEmpty() }
     }
 
-    private fun safeListFiles(directory: DocumentFile): List<DocumentFile> {
-        return runCatching { directory.listFiles().toList() }
+    private fun safeListChildren(directory: DocumentFile): List<DocumentFile> {
+        return runCatching { childLister.listChildren(directory) }
             .getOrDefault(emptyList())
     }
 
@@ -86,4 +90,11 @@ class DocumentCacheMediaLocator(
         val file: DocumentFile,
         val relativePath: String
     )
+
+    companion object {
+        private fun createDocumentResolver(context: Context): (String) -> DocumentFile? {
+            val applicationContext = context.applicationContext
+            return { uri -> DocumentFile.fromSingleUri(applicationContext, uri.toUri()) }
+        }
+    }
 }

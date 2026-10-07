@@ -31,6 +31,8 @@ import com.example.bili2media.ui.BiliCacheAdapter
 import com.example.bili2media.ui.export.BiliCacheListItem
 import com.example.bili2media.ui.export.Mp4ExportUiState
 import com.example.bili2media.ui.export.Mp4ExportViewModel
+import com.example.bili2media.ui.export.m4a.M4aExportUiState
+import com.example.bili2media.ui.export.m4a.M4aExportViewModel
 import com.example.bili2media.ui.image.CoilCoverImageLoader
 import java.io.File
 import java.util.concurrent.Executors
@@ -51,7 +53,10 @@ class MainActivity : AppCompatActivity() {
             coverImageLoader = CoilCoverImageLoader(),
             onExport = ::enqueueExport,
             onCancel = ::cancelExport,
-            onOpenOutput = ::openExportedMp4
+            onOpenOutput = ::openExportedMp4,
+            onM4aExport = ::enqueueM4aExport,
+            onM4aCancel = ::cancelM4aExport,
+            onOpenM4aOutput = ::openExportedM4a
         )
     }
     private val scanExecutor = Executors.newSingleThreadExecutor()
@@ -63,7 +68,9 @@ class MainActivity : AppCompatActivity() {
     private var notificationPermissionRequested = false
     private var scannedEntries: List<BiliCacheEntry> = emptyList()
     private var latestExportStates: Map<String, Mp4ExportUiState> = emptyMap()
+    private var latestM4aExportStates: Map<String, M4aExportUiState> = emptyMap()
     private lateinit var exportViewModel: Mp4ExportViewModel
+    private lateinit var m4aExportViewModel: M4aExportViewModel
 
     private val allFilesAccessLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -108,6 +115,11 @@ class MainActivity : AppCompatActivity() {
         exportViewModel = ViewModelProvider(this)[Mp4ExportViewModel::class.java]
         exportViewModel.states.observe(this) { states ->
             latestExportStates = states.orEmpty()
+            submitCombinedList()
+        }
+        m4aExportViewModel = ViewModelProvider(this)[M4aExportViewModel::class.java]
+        m4aExportViewModel.states.observe(this) { states ->
+            latestM4aExportStates = states.orEmpty()
             submitCombinedList()
         }
 
@@ -325,7 +337,9 @@ class MainActivity : AppCompatActivity() {
             scannedEntries.map { entry ->
                 BiliCacheListItem(
                     entry = entry,
-                    exportState = latestExportStates[entry.id] ?: Mp4ExportUiState.Idle
+                    exportState = latestExportStates[entry.id] ?: Mp4ExportUiState.Idle,
+                    m4aExportState = latestM4aExportStates[entry.id]
+                        ?: M4aExportUiState.Idle
                 )
             }
         )
@@ -338,6 +352,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun cancelExport(entryId: String) {
         exportViewModel.cancel(entryId)
+    }
+
+    private fun enqueueM4aExport(entry: BiliCacheEntry) {
+        m4aExportViewModel.enqueue(entry)
+        requestNotificationPermissionIfNeeded()
+    }
+
+    private fun cancelM4aExport(entryId: String) {
+        m4aExportViewModel.cancel(entryId)
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -362,6 +385,18 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         } catch (_: ActivityNotFoundException) {
             Toast.makeText(this, R.string.open_mp4_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openExportedM4a(uriValue: String) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(Uri.parse(uriValue), "audio/mp4")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.open_m4a_failed, Toast.LENGTH_SHORT).show()
         }
     }
 

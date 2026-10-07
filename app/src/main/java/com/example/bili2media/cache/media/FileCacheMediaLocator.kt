@@ -43,7 +43,7 @@ class FileCacheMediaLocator(
                 val childRelativePath = joinPath(node.relativePath, child.name)
                 when {
                     child.isDirectory -> pending.add(Node(child, childRelativePath))
-                    child.isFile && isMp4ExportInputFileName(child.name) -> {
+                    child.isFile && isExportInputFileName(child.name) -> {
                         val canonicalChild = runCatching { child.canonicalFile }.getOrNull()
                             ?: return@forEach
                         if (!canonicalChild.toPath().startsWith(rootPath)) {

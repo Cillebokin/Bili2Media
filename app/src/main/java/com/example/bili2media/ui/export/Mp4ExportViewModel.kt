@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.work.WorkManager
 import com.example.bili2media.cache.model.BiliCacheEntry
+import com.example.bili2media.export.output.CacheEntryExportTitleResolver
 import com.example.bili2media.export.usecase.Mp4ExportRequest
 import com.example.bili2media.export.work.Mp4ExportWorkContract
 
@@ -14,6 +15,7 @@ class Mp4ExportViewModel(
 ) : AndroidViewModel(application) {
     private val workManager = WorkManager.getInstance(application)
     private val stateMapper = Mp4ExportStateMapper()
+    private val exportTitleResolver = CacheEntryExportTitleResolver()
 
     val states: LiveData<Map<String, Mp4ExportUiState>> = MediatorLiveData<
         Map<String, Mp4ExportUiState>
@@ -28,7 +30,7 @@ class Mp4ExportViewModel(
     fun enqueue(entry: BiliCacheEntry) {
         val request = Mp4ExportRequest(
             entryId = entry.id,
-            title = entry.title,
+            title = exportTitleResolver.resolve(entry.title, entry.subtitle),
             location = entry.location
         )
         workManager.enqueueUniqueWork(
