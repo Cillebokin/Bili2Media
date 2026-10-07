@@ -1,42 +1,25 @@
-# Android Studio and editors
-.idea/
 *.iml
-.vscode/
-.fleet/
-/out/
-
-# Gradle and Kotlin caches
-.gradle/
-.kotlin/
-/build/
-**/build/
-
-# Local machine configuration
+.gradle
+local.properties
+.externalNativeBuild
+.cxx
 local.properties
 
-# Android and native build intermediates
-captures/
-.navigation/
+.*/
+.idea/
+.kotlin/
+.gradle/
 .externalNativeBuild/
 .cxx/
+captures/
+build/
+**/build/
 
-# Packaged outputs
+.agents/
+.codex/
+.serena/
+Temp/
+docs/
+
 *.apk
-*.aab
-*.ap_
-/app/release/
-
-# Signing material
-*.jks
-*.keystore
-keystore.properties
-
-# Logs and diagnostics
-*.log
-*.hprof
-hs_err_pid*
-
-# Operating system metadata
 .DS_Store
-Thumbs.db
-Desktop.ini
