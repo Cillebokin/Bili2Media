@@ -22,7 +22,9 @@ class FileCacheMediaLocatorTest {
         val audio = writeBytes(candidate, "80/audio.M4S", byteArrayOf(1, 2))
         val video = writeBytes(candidate, "80/video.m4s", byteArrayOf(3, 4, 5))
         val existing = writeBytes(candidate, "existing.mp4", byteArrayOf(6, 7, 8, 9))
+        val existingAudio = writeBytes(candidate, "existing.m4a", byteArrayOf(10, 11))
         writeBytes(candidate, "ignored.blv", byteArrayOf(10))
+        writeBytes(candidate, "ignored.aac", byteArrayOf(12))
         writeBytes(candidate, "cover.jpg", byteArrayOf(11))
         writeText(candidate, "nested/entry.json", "{}")
         writeBytes(candidate, "nested/video.m4s", byteArrayOf(12))
@@ -32,12 +34,12 @@ class FileCacheMediaLocatorTest {
         )
 
         assertEquals(
-            listOf("80/audio.M4S", "80/video.m4s", "existing.mp4"),
+            listOf("80/audio.M4S", "80/video.m4s", "existing.m4a", "existing.mp4"),
             files.map { it.relativePath }
         )
-        assertEquals(listOf(2L, 3L, 4L), files.map { it.size })
+        assertEquals(listOf(2L, 3L, 2L, 4L), files.map { it.size })
         assertEquals(
-            listOf(audio, video, existing).map { it.canonicalPath },
+            listOf(audio, video, existingAudio, existing).map { it.canonicalPath },
             files.map { (it.input as MediaInputRef.FilePath).path }
         )
     }

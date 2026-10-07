@@ -6,15 +6,33 @@ plugins {
 android {
     namespace = "com.example.bili2media"
     compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.example.bili2media"
         minSdk = 33
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "V1.0.0.1007"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_STL=none"
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {

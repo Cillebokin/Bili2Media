@@ -6,7 +6,8 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 
 class CacheRootStore(context: Context) {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     fun current(): CacheRootSelection {
         val savedUri = preferences.getString(KEY_TREE_URI, null)
@@ -24,10 +25,20 @@ class CacheRootStore(context: Context) {
         clearTree()
     }
 
-    fun saveTree(uri: Uri) {
+    fun saveTree(uri: Uri): Boolean {
+        if (uri.scheme != CONTENT_SCHEME) return false
+        val accessPersisted = runCatching {
+            appContext.contentResolver.takePersistableUriPermission(
+                uri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }.isSuccess
+        if (!accessPersisted) return false
+
         preferences.edit {
             putString(KEY_TREE_URI, uri.toString())
         }
+        return true
     }
 
     fun clearTree() {

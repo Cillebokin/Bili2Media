@@ -7,5 +7,7 @@ data class MediaTrackInfo(
     val durationUs: Long?,
     val width: Int?,
     val height: Int?,
-    val bitrate: Int?
+    val bitrate: Int?,
+    val sampleRate: Int? = null,
+    val channelCount: Int? = null
 )

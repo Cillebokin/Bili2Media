@@ -7,23 +7,66 @@
     android:layout_marginBottom="@dimen/space_sm"
     android:background="@drawable/bg_cache_item"
     android:orientation="vertical"
-    android:padding="@dimen/space_md">
+    android:paddingStart="@dimen/space_md"
+    android:paddingTop="@dimen/space_md"
+    android:paddingEnd="@dimen/space_md"
+    android:paddingBottom="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:baselineAligned="false"
+        android:gravity="top"
         android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/imgCacheCover"
+    <LinearLayout
         android:layout_width="@dimen/cache_cover_width"
-        android:layout_height="@dimen/cache_cover_height"
-        android:background="@drawable/bg_cover_frame"
-        android:clipToOutline="true"
-        android:contentDescription="@null"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_cover_placeholder" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imgCacheCover"
+            android:layout_width="@dimen/cache_cover_width"
+            android:layout_height="@dimen/cache_cover_height"
+            android:background="@drawable/bg_cover_frame"
+            android:clipToOutline="true"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_cover_placeholder" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txtCacheStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_status_chip"
+                android:paddingStart="@dimen/space_xs"
+                android:paddingTop="2dp"
+                android:paddingEnd="@dimen/space_xs"
+                android:paddingBottom="2dp"
+                android:text="@string/cache_status_available"
+                android:textColor="@color/bili2media_text_primary"
+                android:textSize="10sp"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/txtCacheDetails"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:maxLines="1"
+                android:textColor="@color/bili2media_text_secondary"
+                android:textSize="10sp"
+                tools:text="12 MB" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -50,19 +93,6 @@
                 android:textStyle="bold"
                 tools:text="示例视频" />
 
-            <TextView
-                android:id="@+id/txtCacheStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/space_sm"
-                android:background="@drawable/bg_status_chip"
-                android:paddingStart="@dimen/space_sm"
-                android:paddingTop="@dimen/space_xs"
-                android:paddingEnd="@dimen/space_sm"
-                android:paddingBottom="@dimen/space_xs"
-                android:textColor="@color/bili2media_text_secondary"
-                android:textSize="@dimen/text_caption"
-                tools:text="可用" />
         </LinearLayout>
 
         <TextView
@@ -73,24 +103,6 @@
             android:textColor="@color/bili2media_text_secondary"
             android:textSize="@dimen/text_caption"
             tools:text="第一集" />
-
-        <TextView
-            android:id="@+id/txtCacheDetails"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_sm"
-            android:textColor="@color/bili2media_text_primary"
-            android:textSize="@dimen/text_caption"
-            tools:text="12 MB · 2 个片段" />
-
-        <TextView
-            android:id="@+id/txtCacheIds"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:textColor="@color/bili2media_text_secondary"
-            android:textSize="@dimen/text_caption"
-            tools:text="AV123 · CID456" />
 
         <TextView
             android:id="@+id/txtCachePath"
@@ -115,28 +127,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_sm"
-        android:gravity="center_vertical"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical|end"
         android:orientation="horizontal">
-
-        <ProgressBar
-            android:id="@+id/progressExport"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="@dimen/export_progress_size"
-            android:layout_height="@dimen/export_progress_size"
-            android:layout_marginEnd="@dimen/space_sm"
-            android:max="100"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/txtExportStatus"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/space_sm"
-            android:layout_weight="1"
-            android:text="@string/export_status_ready"
-            android:textColor="@color/bili2media_text_secondary"
-            android:textSize="@dimen/text_caption" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnExportAction"
@@ -149,6 +142,40 @@
             android:paddingStart="@dimen/space_md"
             android:paddingEnd="@dimen/space_md"
             android:text="@string/export_mp4"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_caption"
+            app:backgroundTint="@null" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnM4aExportAction"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/export_button_height"
+            android:layout_marginStart="@dimen/space_sm"
+            android:background="@drawable/bg_export_button"
+            android:gravity="center"
+            android:minWidth="@dimen/export_button_min_width"
+            android:minHeight="0dp"
+            android:paddingStart="@dimen/space_md"
+            android:paddingEnd="@dimen/space_md"
+            android:text="@string/export_m4a"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_caption"
+            app:backgroundTint="@null" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnMp3ExportAction"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/export_button_height"
+            android:layout_marginStart="@dimen/space_sm"
+            android:background="@drawable/bg_export_button"
+            android:gravity="center"
+            android:minWidth="@dimen/export_button_min_width"
+            android:minHeight="0dp"
+            android:paddingStart="@dimen/space_md"
+            android:paddingEnd="@dimen/space_md"
+            android:text="@string/export_mp3"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="@dimen/text_caption"

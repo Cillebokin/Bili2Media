@@ -6,7 +6,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import com.example.bili2media.cache.model.CacheEntryLocation
 import com.example.bili2media.export.usecase.Mp4ExportRequest
-import java.util.concurrent.atomic.AtomicLong
 
 object Mp4ExportWorkContract {
     const val TAG_ALL_EXPORTS = "bili2media:mp4-export"
@@ -81,7 +80,7 @@ object Mp4ExportWorkContract {
 
     fun createWorkRequest(
         request: Mp4ExportRequest,
-        requestOrder: Long = nextRequestOrder()
+        requestOrder: Long = ExportRequestOrder.next()
     ): OneTimeWorkRequest {
         return OneTimeWorkRequestBuilder<Mp4ExportWorker>()
             .setInputData(encodeRequest(request))
@@ -91,13 +90,6 @@ object Mp4ExportWorkContract {
             .build()
     }
 
-    private fun nextRequestOrder(): Long {
-        return LAST_REQUEST_ORDER.updateAndGet { previous ->
-            maxOf(System.currentTimeMillis(), previous + 1L)
-        }
-    }
-
     private const val LOCATION_FILE = "file"
     private const val LOCATION_DOCUMENT = "document"
-    private val LAST_REQUEST_ORDER = AtomicLong(0L)
 }

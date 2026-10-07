@@ -112,7 +112,9 @@ class AndroidMediaExtractorProbe(
                 durationUs = format.longValueOrNull(MediaFormat.KEY_DURATION),
                 width = format.intValueOrNull(MediaFormat.KEY_WIDTH),
                 height = format.intValueOrNull(MediaFormat.KEY_HEIGHT),
-                bitrate = format.intValueOrNull(MediaFormat.KEY_BIT_RATE)
+                bitrate = format.intValueOrNull(MediaFormat.KEY_BIT_RATE),
+                sampleRate = format.intValueOrNull(MediaFormat.KEY_SAMPLE_RATE),
+                channelCount = format.intValueOrNull(MediaFormat.KEY_CHANNEL_COUNT)
             )
         }
         return MediaProbeResult.Success(

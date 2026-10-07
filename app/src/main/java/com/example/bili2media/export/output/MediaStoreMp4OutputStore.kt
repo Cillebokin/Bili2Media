@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import com.example.bili2media.storage.OutputDirectoryStore
 
 class MediaStoreMp4OutputStore(
     context: Context,
@@ -13,6 +14,17 @@ class MediaStoreMp4OutputStore(
     private val timestampProvider: () -> Long = System::currentTimeMillis
 ) : Mp4OutputStore {
     private val contentResolver: ContentResolver = context.applicationContext.contentResolver
+    private val selectedOutputDirectory = SelectedOutputDirectory(context)
+
+    fun suggestDuplicateName(title: String): String? {
+        return synchronized(CREATE_LOCK) {
+            fileNameResolver.suggestDuplicateName(
+                title = title,
+                existingNames = queryExistingNames(),
+                timestamp = timestampProvider()
+            )
+        }
+    }
 
     override fun create(title: String): Mp4PendingOutput {
         return synchronized(CREATE_LOCK) {
@@ -21,6 +33,13 @@ class MediaStoreMp4OutputStore(
                 existingNames = queryExistingNames(),
                 timestamp = timestampProvider()
             )
+            selectedOutputDirectory.createFile(displayName, MP4_MIME_TYPE)?.let { uri ->
+                return@synchronized Mp4PendingOutput(
+                    uri = uri.toString(),
+                    displayName = displayName,
+                    isUserSelectedDirectory = true
+                )
+            }
             val values = ContentValues().apply {
                 put(MediaStore.Downloads.DISPLAY_NAME, displayName)
                 put(MediaStore.Downloads.MIME_TYPE, MP4_MIME_TYPE)
@@ -39,6 +58,8 @@ class MediaStoreMp4OutputStore(
     }
 
     override fun commit(output: Mp4PendingOutput) {
+        if (output.isUserSelectedDirectory) return
+
         val values = ContentValues().apply {
             put(MediaStore.Downloads.IS_PENDING, 0)
         }
@@ -52,10 +73,16 @@ class MediaStoreMp4OutputStore(
     }
 
     override fun abandon(output: Mp4PendingOutput) {
-        contentResolver.delete(Uri.parse(output.uri), null, null)
+        if (output.isUserSelectedDirectory) {
+            selectedOutputDirectory.deleteFile(Uri.parse(output.uri))
+        } else {
+            contentResolver.delete(Uri.parse(output.uri), null, null)
+        }
     }
 
     private fun queryExistingNames(): Set<String> {
+        selectedOutputDirectory.existingFileNames()?.let { return it }
+
         val names = mutableSetOf<String>()
         val selection = "${MediaStore.Downloads.RELATIVE_PATH} = ? OR " +
             "${MediaStore.Downloads.RELATIVE_PATH} = ?"
@@ -83,7 +110,7 @@ class MediaStoreMp4OutputStore(
     }
 
     companion object {
-        const val OUTPUT_RELATIVE_PATH = "Download/Bili2Media/Output"
+        const val OUTPUT_RELATIVE_PATH = OutputDirectoryStore.DEFAULT_RELATIVE_PATH
         private const val MP4_MIME_TYPE = "video/mp4"
         private val CREATE_LOCK = Any()
     }

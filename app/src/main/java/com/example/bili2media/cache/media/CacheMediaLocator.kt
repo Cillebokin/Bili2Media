@@ -8,9 +8,9 @@ fun interface CacheMediaLocator {
     fun locate(location: CacheEntryLocation): List<CacheMediaFile>
 }
 
-internal fun isMp4ExportInputFileName(fileName: String): Boolean {
+internal fun isExportInputFileName(fileName: String): Boolean {
     return fileName.substringAfterLast('.', missingDelimiterValue = "")
         .lowercase(Locale.ROOT) in EXPORT_INPUT_EXTENSIONS
 }
 
-private val EXPORT_INPUT_EXTENSIONS = setOf("m4s", "mp4")
+private val EXPORT_INPUT_EXTENSIONS = setOf("m4s", "mp4", "m4a")
